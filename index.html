@@ -104,6 +104,8 @@
         let audioData = null;
         let animationId = null;
 
+	let labels = null;
+
         const context = canvas.getContext('2d');
 
         // Scale context to match scaled canvas size.
@@ -128,14 +130,15 @@
         });
 
 	document.addEventListener('DOMContentLoaded', function() {
-	    fetch('data.wav')
-		.then(response => response.blob())
-		.then(loadAudio);
-	    fetch('label.label')
-		.then(response => response.text())
-		.then(loadLabel);
+		fetch('data.wav')
+			.then(response => response.blob())
+			.then(loadAudio);
+		fetch('label.label')  // Load label file just like an audio file
+			.then(response => response.text())
+			.then(content => {
+				labels = loadLabel(content);
+			});
 	});
-
 
 	function loadLabel(content) {
 		const lines = content.split("\n");
@@ -152,13 +155,26 @@
 			const div = document.createElement('div');
 			div.className = 'label-item';
 			div.innerHTML = `
-			    <div class="label-attr"><span>Start Time</span><input type="text" value="${label.time}" class="form-control"></div>
-			    <div class="label-attr"><span>Length</span><input type="text" value="${label.length}" class="form-control"></div>
-			    <div class="label-attr"><span>Class</span><input type="text" value="${label.label}" class="form-control"></div>
-			`;
+				<div class="label-attr"><span>Start Time</span><input type="text" value="${label.time}" class="form-control"></div>
+				<div class="label-attr"><span>Length</span><input type="text" value="${label.length}" class="form-control"></div>
+				<div class="label-attr"><span>Class</span><input type="text" value="${label.label}" class="form-control"></div>
+				`;
 			labelContainer.appendChild(div);
 		});
 
+		return labels;  // Return labels
+	}
+
+	function drawLabels(labels) {
+		const duration = player.duration;
+		context.save();
+		context.fillStyle = "rgba(0, 255, 0, 0.25)";
+		labels.forEach(label => {
+			const start = label.time / duration * canvas.width;
+			const width = label.length / duration * canvas.width;
+			context.fillRect(start, 0, width, canvas.height);
+		});
+		context.restore();
 	}
 
 	function loadAudio(file) {
@@ -170,15 +186,22 @@
 				audioData = buffer.getChannelData(0);
 				drawWaveform(audioData);
 				player.src = URL.createObjectURL(file);
+
+				player.oncanplaythrough = function() {
+					// Condition to check if labels are not loaded yet
+					if (labels) {
+						drawLabels(labels);
+					}
+				};
 			});
 		};
 
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-            }
+		if (animationId) {
+			cancelAnimationFrame(animationId);
+		}
 
-            reader.readAsArrayBuffer(file);
-            waveformContainer.style.display = 'block';
+		reader.readAsArrayBuffer(file);
+		waveformContainer.style.display = 'block';
         }
 
         playPauseBtn.addEventListener('click', function() {
@@ -240,13 +263,16 @@
             animationId = requestAnimationFrame(animateWave);
         }
 
-        function updatePlayhead() {
-            const progress = player.currentTime / player.duration;
-            context.clearRect(0, 0, canvas.width, canvas.height);
-            drawWaveform(audioData);
-            drawPlayhead(progress);
-            timestampInput.value = formatTimestamp(player.currentTime);
-        }
+	function updatePlayhead() {
+		const progress = player.currentTime / player.duration;
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		drawWaveform(audioData);
+		if (labels) { // Check if labels are loaded
+			drawLabels(labels);
+		}
+		drawPlayhead(progress);
+		timestampInput.value = formatTimestamp(player.currentTime);
+	}
 
         function formatTimestamp(time) {
             const hours = Math.floor(time / 3600);
