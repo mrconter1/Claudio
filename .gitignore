@@ -2,7 +2,6 @@ data.wav
 label.label
 package-lock.json
 package.json
-server.js
 node_modules/.package-lock.json
 node_modules/.bin/mime
 node_modules/accepts/HISTORY.md
@@ -436,3 +435,5 @@ node_modules/vary/package.json
 node_modules/vary/README.md
 public/data/data1.label
 public/data/data1.wav
+node_modules/wav-decoder/index.js
+node_modules/wav-decoder/README.md
