@@ -21,77 +21,84 @@
             <input type="file" class="custom-file-input" id="fileInput" accept=".wav">
             <label class="custom-file-label" for="fileInput">Choose WAV File</label>
         </div>
+        <audio id="player" controls style="width: 100%" class="mt-3"></audio>
         <canvas id="waveformCanvas"></canvas>
     </div>
-
+   
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            const fileInput = document.getElementById('fileInput');
-            const canvas = document.getElementById('waveformCanvas');
-            const context = canvas.getContext('2d');
+        const fileInput = document.getElementById('fileInput');
+        const canvas = document.getElementById('waveformCanvas');
+        const context = canvas.getContext('2d');
+        const player = document.getElementById('player');
+        let audioData = null;
+        let animationId = null;
 
-            // Set canvas dimensions in terms of device pixels
-            const devicePixelRatio = window.devicePixelRatio || 1;
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width * devicePixelRatio;
-            canvas.height = rect.height * devicePixelRatio;
-            context.scale(devicePixelRatio, devicePixelRatio);
-          
-            fileInput.addEventListener('change', handleFile, false);
-          
-            function handleFile(event) {
-                const file = event.target.files[0];
-              
-                if (file.type && file.type.includes('audio')) {
-                    const reader = new FileReader();
-                  
-                    reader.onload = function (e) {
-                        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                      
-                        audioContext.decodeAudioData(e.target.result, function (buffer) {
-                            drawWaveform(buffer);
-                        });
-                    };
-                  
-                    reader.readAsArrayBuffer(file);
-                } else {
-                    alert('Please choose an audio file.');    
-                }
+        canvas.width = canvas.getBoundingClientRect().width;
+      
+        fileInput.addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const audioContext = new AudioContext();
+                player.src = URL.createObjectURL(file);
+                audioContext.decodeAudioData(e.target.result, function(buffer) {
+                    audioData = buffer.getChannelData(0);
+                    drawWaveform(audioData);
+                });
+            };
+      
+            if (animationId) {
+              cancelAnimationFrame(animationId);
             }
-          
-            function drawWaveform(buffer) {
-                const data = buffer.getChannelData(0);
-                const width = canvas.width;
-                const height = canvas.height;
-                const step = Math.ceil(data.length / width);
-                const amp = height / 2;
-              
-                context.clearRect(0, 0, width, height);
-                context.beginPath();
-                context.moveTo(0, amp);
-                
-                context.strokeStyle = 'red'; // Set the stroke color to red
-                
-                for (let i = 0; i < width; i++) {
-                    let min = 1.0;
-                    let max = -1.0;
-                  
-                    for (let j = 0; j < step; j++) {
-                        const value = data[i * step + j];
-                      
-                        if (value < min) min = value;
-                        if (value > max) max = value;
-                    }
-                  
-                    context.lineTo(i, (1 + min) * amp);
-                    context.lineTo(i, (1 + max) * amp);
-                }
-              
-                context.lineTo(width, amp);
-                context.stroke();
-            }
+      
+            reader.readAsArrayBuffer(file);
+            player.onplay = () => animateWave();
         });
+      
+        function animateWave() {
+            updatePlayhead();
+            animationId = requestAnimationFrame(animateWave);
+        }
+      
+        function updatePlayhead() {
+            const progress = player.currentTime / player.duration;
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            drawWaveform(audioData);
+            drawPlayhead(progress);
+        }
+      
+        function drawPlayhead(progress) {
+            context.strokeStyle = 'green';
+            context.beginPath();
+            context.moveTo(canvas.width * progress, 0);
+            context.lineTo(canvas.width * progress, canvas.height);
+            context.stroke();
+        }
+      
+        function drawWaveform(data) {
+            const width = canvas.width;
+            const height = canvas.height;
+            const step = Math.ceil(data.length / width);
+            const amplitude = height / 2;
+      
+            context.strokeStyle = 'red';
+            context.beginPath();
+            context.moveTo(0, amplitude);
+      
+            for(let i = 0; i < width; i++) {
+                let min = 1, max = -1;
+                for(let j = 0; j < step; j++) {
+                    const datum = data[(i * step) + j];
+                    if(datum < min) min = datum;
+                    if(datum > max) max = datum;
+                }
+                context.lineTo(i, (1 + min) * amplitude);
+                context.lineTo(i, (1 + max) * amplitude);
+            }
+      
+            context.lineTo(canvas.width, amplitude);
+            context.stroke();
+        }
     </script>
-
 </body>
 </html>
