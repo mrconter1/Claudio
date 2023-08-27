@@ -62,10 +62,23 @@
         const player = document.getElementById('player');
         const timestampInput = document.getElementById('timestampInput');
         const seekBtn = document.getElementById('seekBtn');
-        const context = canvas.getContext('2d');
+
+        // Set canvas to display size.
+        canvas.style.width = '100%';
+        canvas.style.height = '150px';
+        
+        // Increase canvas pixel density for HD-DPI screens (e.g. Retina Display)
+        const scaleFactor = window.devicePixelRatio;
+        canvas.width = canvas.offsetWidth * scaleFactor;
+        canvas.height = canvas.offsetHeight * scaleFactor;
 
         let audioData = null;
         let animationId = null;
+
+        const context = canvas.getContext('2d');
+
+        // Scale context to match scaled canvas size.
+        context.scale(scaleFactor, scaleFactor);
 
         fileInput.type = 'file';
         fileInput.accept = '.wav';
