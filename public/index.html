@@ -321,6 +321,28 @@
             context.lineTo(width, amplitude);
             context.stroke();
         }
+
+        fetch('/files')
+            .then(response => response.json())
+            .then(files => {
+                // Load and display each pair of audio and label files
+                files.forEach(filename => {
+                    const nameWithoutExtension = filename.replace('.wav', '');
+
+                    fetch(`data/${nameWithoutExtension}.wav`)
+                        .then(response => response.blob())
+                        .then(loadAudio);  // loadAudio needs to be defined
+
+                    fetch(`data/${nameWithoutExtension}.label`)
+                        .then(response => response.text())
+                        .then(content => {
+                            const labels = loadLabel(content);  // loadLabels needs to be defined
+                            drawLabels(labels);  // drawLabels needs to be defined
+                        });
+                });
+            });
+
     </script>
+
 </body>
 </html>
