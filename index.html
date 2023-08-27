@@ -98,6 +98,12 @@
             }
         });
 
+	document.addEventListener('DOMContentLoaded', function() {
+	    fetch('data.wav')
+		.then(response => response.blob())
+		.then(loadAudio);
+	});
+
         function loadAudio(file) {
             const reader = new FileReader();
 
