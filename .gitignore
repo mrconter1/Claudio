@@ -437,3 +437,5 @@ public/data/data1.label
 public/data/data1.wav
 node_modules/wav-decoder/index.js
 node_modules/wav-decoder/README.md
+public/data/data2.label
+public/data/data2.wav
