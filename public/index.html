@@ -82,9 +82,6 @@
 <body>
     <!-- Side navigation bar-->
     <div class="side-nav">
-        <h2 class="text-white">File list</h2>
-        <a href="#">Data 1</a>
-        <a href="#">Data 2</a>
     </div>
     <!-- Main content -->
     <div class="container">
@@ -127,13 +124,10 @@
                 <div id="labelContainer"></div>
             </div>
 
-            <button id="playerBtn" class="btn btn-primary mt-4 mb-4">Choose File</button>
-
         </div>
     </div>
 
     <script>
-        const chooseFileBtn = document.getElementById('playerBtn');
         const waveformContainer = document.getElementById('waveformContainer');
         const playPauseBtn = document.getElementById('playPauseBtn');
         const stepBackBtn = document.getElementById('stepBackBtn');
@@ -169,10 +163,6 @@
         fileInput.accept = '.wav';
         fileInput.style.display = 'none';
 
-        chooseFileBtn.addEventListener('click', function() {
-            fileInput.click();
-        });
-
         fileInput.addEventListener('change', function(event) {
             const file = event.target.files[0];
 
@@ -194,7 +184,7 @@
                 });
         });
 
-        document.querySelector('.side-nav').innerHTML = '<h2 class="text-white">File list</h2>';
+        document.querySelector('.side-nav').innerHTML = '<h2 class="text-white">Sample List</h2>';
         fetch('/files')
             .then(response => response.json())
             .then(files => {
@@ -421,36 +411,6 @@
             context.stroke();
         }
 
-        fetch('/files')
-            .then(response => response.json())
-            .then(files => {
-                // Load and display each pair of audio and label files
-                files.forEach(fileData => {
-                    const fileName = fileData.file;
-                    const fileWithoutExtension = fileName.replace('.wav', '');
-
-                    fetch(`data/${fileWithoutExtension}.wav`)
-                        .then(response => response.blob())
-                        .then(loadAudio); // loadAudio needs to be defined
-
-                    fetch(`data/${fileWithoutExtension}.label`)
-                        .then(response => response.text())
-                        .then(content => {
-                            const labels = loadLabel(content); // loadLabels needs to be defined
-                            drawLabels(labels); // drawLabels needs to be defined
-                        });
-
-                    // Fetch sample rate and file path
-                    fetch(`/samplerate/${fileName}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            // Insert data into HTML
-                            document.getElementById('fileName').textContent = fileName;
-                            document.getElementById('sampleRate').textContent = data.sampleRate + " Hz";
-                        })
-                        .catch(err => console.error("Error: ", err));
-                });
-            });
     </script>
 
 </body>
