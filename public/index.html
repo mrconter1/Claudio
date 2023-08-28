@@ -94,7 +94,7 @@
 
             <div id="fileInformation" class="mt-3">
                 <h3>File Information</h3>
-                <p>Name: <span id="fileName">N/A</span></p>
+                <p>Sample Name: <span id="fileName">N/A</span></p>
                 <p>Sample Rate: <span id="sampleRate">N/A</span></p>
             </div>
 
@@ -153,6 +153,7 @@
         let animationId = null;
 
         let labels = null;
+        let activeLink = null;
 
         const context = canvas.getContext('2d');
 
@@ -173,34 +174,36 @@
             }
         });
 
-        document.addEventListener('DOMContentLoaded', function() {
-            fetch('data.wav')
-                .then(response => response.blob())
-                .then(loadAudio);
-            fetch('label.label') // Load label file just like an audio file
-                .then(response => response.text())
-                .then(content => {
-                    labels = loadLabel(content);
-                });
-        });
-
         document.querySelector('.side-nav').innerHTML = '<h2 class="text-white">Sample List</h2>';
-        fetch('/files')
-            .then(response => response.json())
-            .then(files => {
-                const sideNav = document.querySelector('.side-nav');
-                files.forEach(fileData => {
-                    const file = fileData.file.replace('.wav', '');  // Get the file name without extension
-                    const anchorTag = document.createElement('a');
-                    anchorTag.textContent = file;
-                    anchorTag.href = "#";
-                    anchorTag.addEventListener('click', (event) => {
-                        event.preventDefault();
-                        loadFile(file);  // Add event listener to load file on click
+            fetch('/files')
+                .then(response => response.json())
+                .then(files => {
+                    const sideNav = document.querySelector('.side-nav');
+                    const anchors = files.map(fileData => {
+                        const file = fileData.file.replace('.wav', '');
+                        const anchorTag = document.createElement('a');
+                        anchorTag.textContent = file;
+                        anchorTag.href = "#";
+                        anchorTag.addEventListener('click', (event) => {
+                            event.preventDefault();
+                            loadFile(file);
+                            setActiveLink(anchorTag)
+                        });
+                        sideNav.appendChild(anchorTag);
+                        return anchorTag;
                     });
-                    sideNav.appendChild(anchorTag);
+                    loadFile(files[0].file.replace('.wav', ''));
+                    setActiveLink(anchors[0]); // Set the first file as active
                 });
-            });
+
+        function setActiveLink(link) {
+            if (activeLink) {
+                activeLink.classList.remove('active');  // Remove active class from the previously active link
+            }
+            link.classList.add('active');  // Add active class to the newly selected link
+            activeLink = link;  // Update the active link
+        }
+
 
         function loadFile(file) {
 
@@ -219,7 +222,7 @@
             fetch(`/samplerate/${file}.wav`)
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('fileName').textContent = `${file}.wav`;
+                    document.getElementById('fileName').textContent = `${file}`;
                     document.getElementById('sampleRate').textContent = data.sampleRate + " Hz";
                 })
                 .catch(err => console.error("Error: ", err));
