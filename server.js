@@ -24,18 +24,18 @@ app.get('/files', (req, res) => {
 });
 
 app.get('/samplerate/:file', async (req, res) => {
-  const fileName = req.params.file;
+    const fileName = req.params.file;
 
-  try {
-    const filePath = path.join(__dirname, 'public', 'data', fileName);
-    const fileData = fs.readFileSync(filePath);
-    const audioData = await wavDecoder.decode(fileData);
-    res.json({ sampleRate: audioData.sampleRate });
+    try {
+        const filePath = path.join(__dirname, 'public', 'data', fileName);
+        const fileData = fs.readFileSync(filePath);
+        const audioData = await wavDecoder.decode(fileData);
+        res.json({sampleRate: audioData.sampleRate, path: filePath});  // Modify this line
 
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Could not decode file.');
-  }
+    } catch(err) {
+        console.error(err);
+        res.status(500).send('Could not decode file.');
+    }
 });
 
 app.listen(8000, () => console.log('Server is running on port 8000'));

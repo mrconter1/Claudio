@@ -47,6 +47,12 @@
                 <audio id="player" style="width: 100%"></audio>
             </div>
 
+            <div id="fileInformation" class="mt-3">
+                <h3>File Information</h3>
+                <p>Name: <span id="fileName">N/A</span></p>
+                <p>Sample Rate: <span id="sampleRate">N/A</span></p>
+            </div>
+
             <canvas id="waveformCanvas"></canvas>
 
             <div class="d-flex justify-content-center mt-2">
@@ -326,19 +332,30 @@
             .then(response => response.json())
             .then(files => {
                 // Load and display each pair of audio and label files
-                files.forEach(filename => {
-                    const nameWithoutExtension = filename.replace('.wav', '');
+                files.forEach(fileData => {
+                    const fileName = fileData.file;
+                    const fileWithoutExtension = fileName.replace('.wav', '');
 
-                    fetch(`data/${nameWithoutExtension}.wav`)
+                    fetch(`data/${fileWithoutExtension}.wav`)
                         .then(response => response.blob())
                         .then(loadAudio);  // loadAudio needs to be defined
 
-                    fetch(`data/${nameWithoutExtension}.label`)
+                    fetch(`data/${fileWithoutExtension}.label`)
                         .then(response => response.text())
                         .then(content => {
                             const labels = loadLabel(content);  // loadLabels needs to be defined
                             drawLabels(labels);  // drawLabels needs to be defined
                         });
+
+                    // Fetch sample rate and file path
+                    fetch(`/samplerate/${fileName}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Insert data into HTML
+                            document.getElementById('fileName').textContent = fileName;
+                            document.getElementById('sampleRate').textContent = data.sampleRate + " Hz";
+                        })
+                        .catch(err => console.error("Error: ", err));
                 });
             });
 
