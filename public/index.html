@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +15,7 @@
             border-radius: 10px;
         }
 
-	.label-item {
+        .label-item {
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
@@ -23,22 +24,24 @@
             align-items: center;
             justify-content: space-between;
         }
+
         .label-item span {
             font-weight: bold;
         }
 
-	.label-attr {
+        .label-attr {
             display: flex;
             justify-content: space-between;
             align-items: center;
             width: 300px;
         }
-        .label-attr input {
-            width: 150px; /* Adjust this width as needed */
-        }
 
+        .label-attr input {
+            width: 150px;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1 class="mt-5 text-center">Claudio Studio</h1>
@@ -75,10 +78,10 @@
                 <button id="stopBtn" class="btn btn-danger">Stop</button>
             </div>
 
-	    <div id="labels" class="mt-4">
-		    <h2>Labels</h2>
-		    <div id="labelContainer"></div>
-	    </div>
+            <div id="labels" class="mt-4">
+                <h2>Labels</h2>
+                <div id="labelContainer"></div>
+            </div>
 
             <button id="playerBtn" class="btn btn-primary mt-4 mb-4">Choose File</button>
 
@@ -102,7 +105,7 @@
         // Set canvas to display size.
         canvas.style.width = '100%';
         canvas.style.height = '150px';
-        
+
         // Increase canvas pixel density for HD-DPI screens (e.g. Retina Display)
         const scaleFactor = window.devicePixelRatio;
         canvas.width = canvas.offsetWidth * scaleFactor;
@@ -111,7 +114,7 @@
         let audioData = null;
         let animationId = null;
 
-	let labels = null;
+        let labels = null;
 
         const context = canvas.getContext('2d');
 
@@ -136,79 +139,83 @@
             }
         });
 
-	document.addEventListener('DOMContentLoaded', function() {
-		fetch('data.wav')
-			.then(response => response.blob())
-			.then(loadAudio);
-		fetch('label.label')  // Load label file just like an audio file
-			.then(response => response.text())
-			.then(content => {
-				labels = loadLabel(content);
-			});
-	});
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('data.wav')
+                .then(response => response.blob())
+                .then(loadAudio);
+            fetch('label.label') // Load label file just like an audio file
+                .then(response => response.text())
+                .then(content => {
+                    labels = loadLabel(content);
+                });
+        });
 
-	function loadLabel(content) {
-		const lines = content.split("\n");
-		const labels = lines.slice(1).map(line => {
-			const parts = line.split(",");
-			const time = Number.parseFloat(parts[0]);
-			const length = Number.parseFloat(parts[1]);
-			const label = parts[2];
-			return {time, length, label};
-		});
+        function loadLabel(content) {
+            const lines = content.split("\n");
+            const labels = lines.slice(1).map(line => {
+                const parts = line.split(",");
+                const time = Number.parseFloat(parts[0]);
+                const length = Number.parseFloat(parts[1]);
+                const label = parts[2];
+                return {
+                    time,
+                    length,
+                    label
+                };
+            });
 
-		const labelContainer = document.getElementById('labelContainer');
-		labels.forEach(label => {
-			const div = document.createElement('div');
-			div.className = 'label-item';
-			div.innerHTML = `
+            const labelContainer = document.getElementById('labelContainer');
+            labels.forEach(label => {
+                const div = document.createElement('div');
+                div.className = 'label-item';
+                div.innerHTML = `
 				<div class="label-attr"><span>Start Time</span><input type="text" value="${label.time}" class="form-control"></div>
 				<div class="label-attr"><span>Length</span><input type="text" value="${label.length}" class="form-control"></div>
 				<div class="label-attr"><span>Class</span><input type="text" value="${label.label}" class="form-control"></div>
 				`;
-			labelContainer.appendChild(div);
-		});
+                labelContainer.appendChild(div);
+            });
 
-		return labels;  // Return labels
-	}
+            return labels; // Return labels
+        }
 
-	function drawLabels(labels) {
-		const duration = player.duration;
-		context.save();
-		context.fillStyle = "rgba(0, 255, 0, 0.25)";
-		labels.forEach(label => {
-			const start = label.time / duration * canvas.width;
-			const width = label.length / duration * canvas.width;
-			context.fillRect(start, 0, width, canvas.height);
-		});
-		context.restore();
-	}
+        function drawLabels(labels) {
+            const duration = player.duration;
+            context.save();
+            context.fillStyle = "rgba(0, 255, 0, 0.25)";
+            labels.forEach(label => {
+                const start = label.time / duration * canvas.width;
+                const width = label.length / duration * canvas.width;
+                context.fillRect(start, 0, width, canvas.height);
+            });
+            context.restore();
+        }
 
-	function loadAudio(file) {
-		const reader = new FileReader();
+        function loadAudio(file) {
+            const reader = new FileReader();
 
-		reader.onload = function(e) {
-			const audioContext = new AudioContext();
-			audioContext.decodeAudioData(e.target.result, function(buffer) {
-				audioData = buffer.getChannelData(0);
-				drawWaveform(audioData);
-				player.src = URL.createObjectURL(file);
+            reader.onload = function(e) {
+                const audioContext = new AudioContext();
+                audioContext.decodeAudioData(e.target.result, function(buffer) {
+                    audioData = buffer.getChannelData(0);
+                    drawWaveform(audioData);
+                    player.src = URL.createObjectURL(file);
 
-				player.oncanplaythrough = function() {
-					// Condition to check if labels are not loaded yet
-					if (labels) {
-						drawLabels(labels);
-					}
-				};
-			});
-		};
+                    player.oncanplaythrough = function() {
+                        // Condition to check if labels are not loaded yet
+                        if (labels) {
+                            drawLabels(labels);
+                        }
+                    };
+                });
+            };
 
-		if (animationId) {
-			cancelAnimationFrame(animationId);
-		}
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
 
-		reader.readAsArrayBuffer(file);
-		waveformContainer.style.display = 'block';
+            reader.readAsArrayBuffer(file);
+            waveformContainer.style.display = 'block';
         }
 
         playPauseBtn.addEventListener('click', function() {
@@ -270,16 +277,16 @@
             animationId = requestAnimationFrame(animateWave);
         }
 
-	function updatePlayhead() {
-		const progress = player.currentTime / player.duration;
-		context.clearRect(0, 0, canvas.width, canvas.height);
-		drawWaveform(audioData);
-		if (labels) { // Check if labels are loaded
-			drawLabels(labels);
-		}
-		drawPlayhead(progress);
-		timestampInput.value = formatTimestamp(player.currentTime);
-	}
+        function updatePlayhead() {
+            const progress = player.currentTime / player.duration;
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            drawWaveform(audioData);
+            if (labels) { // Check if labels are loaded
+                drawLabels(labels);
+            }
+            drawPlayhead(progress);
+            timestampInput.value = formatTimestamp(player.currentTime);
+        }
 
         function formatTimestamp(time) {
             const hours = Math.floor(time / 3600);
@@ -339,13 +346,13 @@
 
                     fetch(`data/${fileWithoutExtension}.wav`)
                         .then(response => response.blob())
-                        .then(loadAudio);  // loadAudio needs to be defined
+                        .then(loadAudio); // loadAudio needs to be defined
 
                     fetch(`data/${fileWithoutExtension}.label`)
                         .then(response => response.text())
                         .then(content => {
-                            const labels = loadLabel(content);  // loadLabels needs to be defined
-                            drawLabels(labels);  // drawLabels needs to be defined
+                            const labels = loadLabel(content); // loadLabels needs to be defined
+                            drawLabels(labels); // drawLabels needs to be defined
                         });
 
                     // Fetch sample rate and file path
@@ -359,8 +366,8 @@
                         .catch(err => console.error("Error: ", err));
                 });
             });
-
     </script>
 
 </body>
+
 </html>
