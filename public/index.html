@@ -39,10 +39,49 @@
         .label-attr input {
             width: 150px;
         }
+
+        /* Styles for Side Navigation Bar */
+        .side-nav {
+            height: 100%;
+            width: 20%;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            padding-top: 20px;
+            white-space: nowrap;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Style for Navigation List Items */
+        .side-nav a {
+            padding: 6px 6px 6px 16px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #818181;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .container {
+            margin-left: 25%;
+        }
+
     </style>
 </head>
 
 <body>
+    <!-- Side navigation bar-->
+    <div class="side-nav">
+        <h2 class="text-white">File list</h2>
+        <a href="#">Data 1</a>
+        <a href="#">Data 2</a>
+    </div>
+    <!-- Main content -->
     <div class="container">
         <h1 class="mt-5 text-center">Claudio Studio</h1>
 
