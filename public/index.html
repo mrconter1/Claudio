@@ -67,6 +67,11 @@
             transition: 0.3s;
         }
 
+        .side-nav a.active {
+            color: #f1f1f1;
+            background-color: #555;
+        }
+
         .container {
             margin-left: 25%;
         }
@@ -188,6 +193,47 @@
                     labels = loadLabel(content);
                 });
         });
+
+        document.querySelector('.side-nav').innerHTML = '<h2 class="text-white">File list</h2>';
+        fetch('/files')
+            .then(response => response.json())
+            .then(files => {
+                const sideNav = document.querySelector('.side-nav');
+                files.forEach(fileData => {
+                    const file = fileData.file.replace('.wav', '');  // Get the file name without extension
+                    const anchorTag = document.createElement('a');
+                    anchorTag.textContent = file;
+                    anchorTag.href = "#";
+                    anchorTag.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        loadFile(file);  // Add event listener to load file on click
+                    });
+                    sideNav.appendChild(anchorTag);
+                });
+            });
+
+        function loadFile(file) {
+
+            // Clear existing labels
+            document.getElementById('labelContainer').innerHTML = '';
+
+            fetch(`data/${file}.wav`)
+                .then(response => response.blob())
+                .then(loadAudio);
+            fetch(`data/${file}.label`)
+                .then(response => response.text())
+                .then(content => {
+                    labels = loadLabel(content);
+                    drawLabels(labels);
+                });
+            fetch(`/samplerate/${file}.wav`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('fileName').textContent = `${file}.wav`;
+                    document.getElementById('sampleRate').textContent = data.sampleRate + " Hz";
+                })
+                .catch(err => console.error("Error: ", err));
+        }
 
         function loadLabel(content) {
             const lines = content.split("\n");

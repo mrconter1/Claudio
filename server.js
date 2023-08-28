@@ -17,8 +17,11 @@ app.get('/files', (req, res) => {
       console.error(err);
       res.status(500).send('Error reading data folder.');
     } else {
-      const wavFiles = files.filter(file => file.endsWith('.wav'));
-      res.json(wavFiles);
+      const wavFiles = files
+        .filter(file => file.endsWith('.wav') || file.endsWith('.label'))
+        .map(file => path.basename(file, path.extname(file)))
+      const uniqueFiles = [...new Set(wavFiles)];
+      res.json(uniqueFiles);
     }
   });
 });
