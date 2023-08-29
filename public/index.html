@@ -184,10 +184,6 @@
         let draggingStartX = -1;
         let draggingEnd = '';
 
-        let zoomFactor = 1.0;  // This will be used for zooming in and out
-        let prevZoomFactor = 1.0;
-        let zoomCenter = 0; // Global variable to store zoom center
-
         let activeLink = null;
 
         const context = canvas.getContext('2d');
@@ -450,15 +446,6 @@
             playerContainer.style.display = 'block';
         });
 
-        function getVirtualX(x) {
-            const zoomChange = zoomFactor / prevZoomFactor; // How much zoom changed
-
-            // Scale the distance from the zoom center according to the level of zoom and return the virtual X
-            const relativeX = x - zoomCenter; 
-            return zoomCenter + relativeX * zoomChange;
-        }
-
-
         function updateAll() {
             context.clearRect(0, 0, canvas.width, canvas.height);
             drawWaveform(audioData);
@@ -467,24 +454,6 @@
             }
             updatePlayhead();
         }
-
-        canvas.addEventListener('wheel', function(event) {
-            event.preventDefault(); // Prevents the page to scroll as default
-
-            // Get Mouse X position relative to Canvas
-            const rect = canvas.getBoundingClientRect();
-            zoomCenter = event.clientX - rect.left;
-
-            // Change the zoomFactor based on direction of scroll, and remember previous factor
-            prevZoomFactor = zoomFactor;
-            zoomFactor += event.deltaY > 0 ? -0.1 : 0.1;
-            
-            // Limitations for the zoomFactor, adjust according to your requirement
-            if (zoomFactor < 1.0) zoomFactor = 1.0;
-            if (zoomFactor > 5.0) zoomFactor = 5.0;
-
-            updateAll();
-        });
 
         canvas.addEventListener('mousedown', function (event) {
             const rect = canvas.getBoundingClientRect();
@@ -620,25 +589,23 @@
             context.stroke();
         }
 
-        function drawWaveform(data) {
+                function drawWaveform(data) {
             const width = canvas.width;
             const height = canvas.height;
-            const step = Math.ceil(data.length / (width * zoomFactor)); // Updated to consider `scaleFactor`
-            
+            const step = Math.ceil(data.length / width);
             const amplitude = height / 2;
+            context.clearRect(0, 0, width, height);
             context.strokeStyle = 'red';
             context.beginPath();
             context.moveTo(0, amplitude);
 
             for (let i = 0; i < width; i++) {
-                const virtualX = getVirtualX(i); // Gets the actual X position wrt scale factor 
                 let min = 1.0;
                 let max = -1.0;
 
                 for (let j = 0; j < step; j++) {
-                    const dataIndex = Math.floor(virtualX * step + j);
-                    const datum = dataIndex < data.length ? data[dataIndex] : 0;
-                    
+                    const datum = data[i * step + j];
+
                     if (datum < min) {
                         min = datum;
                     } else if (datum > max) {
