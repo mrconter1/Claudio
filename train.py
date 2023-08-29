@@ -37,18 +37,27 @@ y_data = []
 # Iterate over all wave files
 for filename in root_dir.rglob('*.wav'):
     print(f"Processing {filename}...")
-
     # Load audio
     audio, sr = librosa.load(filename, sr=SR)  # Make sure all audios are the same sampling rate
-
     # Load corresponding labels
-    label_file_path = filename.parent / 'y_labels.csv'
+    label_file_path = filename.with_suffix('.label')
     if label_file_path.exists():
-        labels = pd.read_csv(label_file_path).to_numpy()
+        # Initiate array with zeros
+        labels = np.zeros(audio.shape[0], dtype=int)
+        try:
+            df = pd.read_csv(label_file_path, header=None) 
+            # Drop non-numeric rows in the first column
+            df = df[pd.to_numeric(df[0], errors='coerce').notna()]
+            # Go through each row, calculate sample numbers and fill the array
+            for _, row in df.iterrows():
+                start_sample = int(float(row[0]) * SR)  # start time to sample number
+                end_sample = min(start_sample + int(float(row[1]) * SR), len(audio))  # end time to sample number
+                labels[start_sample:end_sample] = 1
+        except pd.errors.EmptyDataError:
+            print(f"Warning: Label file {label_file_path} contains no data rows.")
     else:
         print(f"Warning: No corresponding label file {label_file_path} found.")
         continue
-
     # Split into chunks and append to data
     audio_chunks, label_chunks = split_into_chunks(audio, labels)
     X_data.append(audio_chunks)
@@ -80,9 +89,9 @@ print("Compiling the model...")
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
 # Defining the LSTM model
-model.fit(np.expand_dims(X_train_padded, -1), y_train, epochs=3, batch_size=32, validation_data=(np.expand_dims(X_val_padded, -1), y_val), verbose=1)
+#model.fit(np.expand_dims(X_train_padded, -1), y_train, epochs=3, batch_size=32, validation_data=(np.expand_dims(X_val_padded, -1), y_val), verbose=1)
 
 # Evaluate the model
-score = model.evaluate(np.expand_dims(X_val_padded, -1), y_val, verbose=0)
-print("Test loss:", score[0])
-print("Test accuracy:", score[1])
+#score = model.evaluate(np.expand_dims(X_val_padded, -1), y_val, verbose=0)
+#print("Test loss:", score[0])
+#print("Test accuracy:", score[1])

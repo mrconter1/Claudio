@@ -480,6 +480,11 @@ document.querySelector('.train-model').addEventListener('click', function() {
 });
 
 socket.on('out', function (data) {
-    document.querySelector('#outputContent').innerText += data;
-});
+    var outputContent = document.querySelector('#outputContent');
 
+    // append output
+    outputContent.innerText += data;
+
+    // scroll to bottom
+    outputContent.scrollTop = outputContent.scrollHeight;
+});
