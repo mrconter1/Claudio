@@ -1,3 +1,4 @@
+// Global variables
 const waveformContainer = document.getElementById('waveformContainer');
 const playPauseBtn = document.getElementById('playPauseBtn');
 const stepBackBtn = document.getElementById('stepBackBtn');
@@ -42,16 +43,6 @@ context.scale(scaleFactor, scaleFactor);
 fileInput.type = 'file';
 fileInput.accept = '.wav';
 fileInput.style.display = 'none';
-
-fileInput.addEventListener('change', function (event) {
-    const file = event.target.files[0];
-
-    if (file && file.type && file.type.includes('audio')) {
-        loadAudio(file);
-    } else {
-        alert('Please choose a valid audio file.');
-    }
-});
 
 document.querySelector('.sample-list').innerHTML = '';
 fetch('/files')
@@ -200,20 +191,6 @@ function updateLabelUI() {
     }
 }
 
-nextLabelBtn.addEventListener('click', function () {
-    if (labels && labels.length > 0) {
-        selectedIndex = (selectedIndex + 1) % labels.length;
-        selectLabelAndSeek(selectedIndex);
-    }
-});
-
-prevLabelBtn.addEventListener('click', function () {
-    if (labels && labels.length > 0) {
-        selectedIndex = selectedIndex > 0 ? selectedIndex - 1 : labels.length - 1;
-        selectLabelAndSeek(selectedIndex);
-    }
-});
-
 function selectLabelAndSeek(index) {
     selectedIndex = index;
     player.currentTime = labels[index].time;
@@ -247,6 +224,106 @@ function loadAudio(file) {
     reader.readAsArrayBuffer(file);
     waveformContainer.style.display = 'block';
 }
+
+
+function updateAll() {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    drawWaveform(audioData);
+    if (labels) {
+        drawLabels(labels);
+    }
+    updatePlayhead();
+}
+
+function animateWave() {
+    updatePlayhead();
+    animationId = requestAnimationFrame(animateWave);
+}
+
+function updatePlayhead() {
+    const progress = player.currentTime / player.duration;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    drawWaveform(audioData);
+    if (labels) { // Check if labels are loaded
+        drawLabels(labels);
+    }
+    drawPlayhead(progress);
+    timestampInput.value = formatTimestamp(player.currentTime);
+}
+
+function formatTimestamp(time) {
+    const hours = Math.floor(time / 3600);
+    const minutes = Math.floor((time % 3600) / 60);
+    const seconds = Math.floor(time % 60);
+    const milliseconds = Math.floor((time % 1) * 1000);
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+}
+
+function drawPlayhead(progress) {
+    context.strokeStyle = 'green';
+    context.beginPath();
+    context.moveTo(canvas.width * progress, 0);
+    context.lineTo(canvas.width * progress, canvas.height);
+    context.stroke();
+}
+
+function drawWaveform(data) {
+    const width = canvas.width;
+    const height = canvas.height;
+    const step = Math.ceil(data.length / width);
+    const amplitude = height / 2;
+    context.clearRect(0, 0, width, height);
+    context.strokeStyle = 'red';
+    context.beginPath();
+    context.moveTo(0, amplitude);
+
+    for (let i = 0; i < width; i++) {
+        let min = 1.0;
+        let max = -1.0;
+
+        for (let j = 0; j < step; j++) {
+            const datum = data[i * step + j];
+
+            if (datum < min) {
+                min = datum;
+            } else if (datum > max) {
+                max = datum;
+            }
+        }
+
+        context.lineTo(i, (1 + min) * amplitude);
+        context.lineTo(i, (1 + max) * amplitude);
+    }
+
+    context.lineTo(width, amplitude);
+    context.stroke();
+}
+
+// Event Listeners
+
+nextLabelBtn.addEventListener('click', function () {
+    if (labels && labels.length > 0) {
+        selectedIndex = (selectedIndex + 1) % labels.length;
+        selectLabelAndSeek(selectedIndex);
+    }
+});
+
+prevLabelBtn.addEventListener('click', function () {
+    if (labels && labels.length > 0) {
+        selectedIndex = selectedIndex > 0 ? selectedIndex - 1 : labels.length - 1;
+        selectLabelAndSeek(selectedIndex);
+    }
+});
+
+fileInput.addEventListener('change', function (event) {
+    const file = event.target.files[0];
+
+    if (file && file.type && file.type.includes('audio')) {
+        loadAudio(file);
+    } else {
+        alert('Please choose a valid audio file.');
+    }
+});
 
 playPauseBtn.addEventListener('click', function () {
     if (player.paused) {
@@ -293,15 +370,6 @@ seekBtn.addEventListener('click', function () {
 player.addEventListener('canplay', function () {
     playerContainer.style.display = 'block';
 });
-
-function updateAll() {
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    drawWaveform(audioData);
-    if (labels) {
-        drawLabels(labels);
-    }
-    updatePlayhead();
-}
 
 canvas.addEventListener('mousedown', function (event) {
     const rect = canvas.getBoundingClientRect();
@@ -405,66 +473,3 @@ canvas.addEventListener('mousemove', function (event) {
     }
 });
 
-function animateWave() {
-    updatePlayhead();
-    animationId = requestAnimationFrame(animateWave);
-}
-
-function updatePlayhead() {
-    const progress = player.currentTime / player.duration;
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    drawWaveform(audioData);
-    if (labels) { // Check if labels are loaded
-        drawLabels(labels);
-    }
-    drawPlayhead(progress);
-    timestampInput.value = formatTimestamp(player.currentTime);
-}
-
-function formatTimestamp(time) {
-    const hours = Math.floor(time / 3600);
-    const minutes = Math.floor((time % 3600) / 60);
-    const seconds = Math.floor(time % 60);
-    const milliseconds = Math.floor((time % 1) * 1000);
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
-}
-
-function drawPlayhead(progress) {
-    context.strokeStyle = 'green';
-    context.beginPath();
-    context.moveTo(canvas.width * progress, 0);
-    context.lineTo(canvas.width * progress, canvas.height);
-    context.stroke();
-}
-
-function drawWaveform(data) {
-    const width = canvas.width;
-    const height = canvas.height;
-    const step = Math.ceil(data.length / width);
-    const amplitude = height / 2;
-    context.clearRect(0, 0, width, height);
-    context.strokeStyle = 'red';
-    context.beginPath();
-    context.moveTo(0, amplitude);
-
-    for (let i = 0; i < width; i++) {
-        let min = 1.0;
-        let max = -1.0;
-
-        for (let j = 0; j < step; j++) {
-            const datum = data[i * step + j];
-
-            if (datum < min) {
-                min = datum;
-            } else if (datum > max) {
-                max = datum;
-            }
-        }
-
-        context.lineTo(i, (1 + min) * amplitude);
-        context.lineTo(i, (1 + max) * amplitude);
-    }
-
-    context.lineTo(width, amplitude);
-    context.stroke();
-}
