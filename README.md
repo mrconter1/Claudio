@@ -20,8 +20,9 @@ Claudio Studio was designed with the aim of simplifying the process of working w
 
 ## Project Overview 
 
-![image](https://github.com/mrconter1/Claudio/assets/32551374/ff69e33d-19db-4a2a-94f6-f41d815f225d)
-
+<p align="center">
+  <img src="https://github.com/mrconter1/Claudio/assets/32551374/ff69e33d-19db-4a2a-94f6-f41d815f225d" />
+</p>
 <br />
 
 ## Setup and Installation
@@ -69,47 +70,28 @@ Claudio Studio was designed with the aim of simplifying the process of working w
 
 *Note: Make sure you have Node.js and Python installed in your system before running the above commands. If not installed, you can download them [here](https://nodejs.org/en/download/) and [here](https://www.python.org/downloads/) respectively.*
 
-<br />
-
 ## Features
 
 - **Audio Visualization:** Visualize your sound file in a waveform.
-
 - **Audio Annotation:** Annotate your sound files with labels
-
 - **Audio Segmentation:** Divide your sound files into several segments.
-
 - **Train Model:** Train a simple machine learning model on your annotated sound files.
-
 - **Model Evaluation:** Evaluate your model's performance.
-
-<br />
 
 ## Usage
 
 1. Upload a `.wav` audio file and its corresponding `.label` file. Make sure both files have the same name except the extension.
-
 2. Select a file from the side navigation list.
-
 3. Use the controls to play, pause, step back, step forward, and stop.
-
 4. Annotate and label your sound files by clicking on the waveform. Labels can be adjusted or deleted. 
-
 5. Once you're satisfied with your labels, click on "Train Model" to train a simple machine learning model.
-
-<br />
 
 ## Future Enhancements
 
-- Integrate more sophisticated machine learning models for audio classification.
-
-- Implement a feature allowing users to download their annotated file and model evaluation results.
-
-- Improve UI/UX design for a smoother and more intuitive experience.
-
-- Add support for more audio file types beyond `.wav`.
-
-<br />
+- **Ability to support multiple categories:** Plan to extend the application to support multiple categories for a more diverse audio classification.
+- **Implement automated data augmentation:** Feature to enhance model performance by automatically generating new training data.
+- **Make it easier to add new data:** Allow easier adding of new data.
+- **Encapsulation in a docker container:** Plan to encapsulate the entire application in a docker container for easy installation and deployment.
 
 ## License
 
