@@ -19,7 +19,7 @@ Claudio Studio was designed with the aim of simplifying the process of working w
 ## Project Overview 
 
 <p align="center">
-  <img src="https://github.com/mrconter1/Claudio/assets/32551374/ff69e33d-19db-4a2a-94f6-f41d815f225d" />
+  <img src="demo.gif" />
 </p>
 
 ## Setup and Installation
