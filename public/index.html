@@ -49,12 +49,26 @@
             top: 0;
             left: 0;
             background-color: #111;
-            padding-top: 20px;
             white-space: nowrap;
             overflow-x: hidden;
             transition: 0.5s;
-            padding: 20px;
+            padding-left: 20px;
+            padding-right: 20px;
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* New styles */
+        .sample-list {
+            height: 80%;
+            overflow: auto;
+            border-bottom: 1px solid #555;
+        }
+
+        .control-buttons {
+            height: 20%;
         }
 
         /* Style for Navigation List Items */
@@ -72,25 +86,58 @@
             background-color: #555;
         }
 
-        /* Scrollbar styles */
-        .side-nav::-webkit-scrollbar {
-            width: 10px;  
+        /* Style for sample list links */
+        .sample-list a {
+            display: block;
+            width: 90%; /* limit the width to 90% to create room for the fading effect */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* This will add '...' at the end if the text overflows */
+            position: relative;
+            color: #818181; /* Same color as other sidebar links */
         }
 
-        .side-nav::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        .side-nav::-webkit-scrollbar-thumb {
-            background: #888;
-        }
-
-        .side-nav::-webkit-scrollbar-thumb:hover {
-            background: #555;
+        /* Create fading effect */
+        .sample-list a::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 10%; /* match width here with the empty space created in .sample-list a */
+            height: 100%;
+            background: linear-gradient(to right, rgba(17, 17, 17, 0), rgba(17, 17, 17, 1) 90%); /* Change the colors (rgba) to match your sidebar color */
         }
 
         .container {
             margin-left: 25%;
+        }
+
+        .control-buttons .btn {
+            width: 80%;
+            border-radius: 5px;
+        }
+
+        /* Styles for scroll bar */
+        .sample-list::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .sample-list::-webkit-scrollbar-track {
+            background: #f1f1f100;
+        }
+
+        .sample-list::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 5px;
+        }
+
+        .sample-list::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Style to remove horizontal scroll bar */
+        .sample-list {
+            overflow-x: hidden;
         }
 
     </style>
@@ -99,6 +146,18 @@
 <body>
     <!-- Side navigation bar-->
     <div class="side-nav">
+        <br>
+        <h2 class="text-white">Sample List</h2>
+        <!-- Samples list -->
+        <div class="sidebar-section sample-list">
+        </div>
+
+        <!-- Control buttons -->
+        <div class="sidebar-section control-buttons d-flex flex-column align-items-center justify-content-center">
+            <button class="btn btn-primary mb-2">Train Model</button>
+            <button class="btn btn-primary mb-2">Test Model</button>
+            <button class="btn btn-primary">Settings</button>
+        </div>
     </div>
     <!-- Main content -->
     <div class="container">
@@ -205,11 +264,11 @@
             }
         });
 
-        document.querySelector('.side-nav').innerHTML = '<h2 class="text-white">Sample List</h2>';
+        document.querySelector('.sample-list').innerHTML = '';
             fetch('/files')
                 .then(response => response.json())
                 .then(files => {
-                    const sideNav = document.querySelector('.side-nav');
+                    const samplesList = document.querySelector('.sample-list');
                     const anchors = files.map(fileData => {
                         const file = fileData;
                         const anchorTag = document.createElement('a');
@@ -220,7 +279,7 @@
                             loadFile(file);
                             setActiveLink(anchorTag)
                         });
-                        sideNav.appendChild(anchorTag);
+                        samplesList.appendChild(anchorTag);
                         return anchorTag;
                     });
                     loadFile(files[0]);
