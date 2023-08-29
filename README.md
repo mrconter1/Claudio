@@ -20,7 +20,7 @@ Claudio Studio was designed with the aim of simplifying the process of working w
 
 ## Project Overview 
 
-![Overview](https://i.imgur.com/PuNGeyo.mp4)*
+![Overview](https://imgur.com/a/acgibzk)*
 
 <br />
 
