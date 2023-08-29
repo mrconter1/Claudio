@@ -473,3 +473,13 @@ canvas.addEventListener('mousemove', function (event) {
     }
 });
 
+const socket = io();
+
+document.querySelector('.train-model').addEventListener('click', function() {
+    socket.emit('train_model');
+});
+
+socket.on('out', function (data) {
+    document.querySelector('#outputContent').innerText += data;
+});
+

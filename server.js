@@ -5,9 +5,30 @@ const wavDecoder = require('wav-decoder');
 
 const app = express();
 
+const server = require('http').createServer(app);
+const io = require("socket.io")(server);
+const { spawn } = require('child_process');
 
 // Serve static files
 app.use(express.static('public'));
+
+io.on("connection", socket => {
+  socket.on("train_model", () => {
+    const python = spawn('python3', ['train.py']);
+    python.stdout.on('data', function (data) {
+      console.log('Pipe data from python script ...');
+      socket.emit('out', data.toString());
+    });
+    python.on('close', (code) => {
+      console.log(`child process close all stdio with code ${code}`);
+      socket.emit('out', `Process complete with code ${code}`);
+    });
+    python.stderr.on('data', (data) => {
+      console.error(`stderr: ${data}`);
+      socket.emit('out', `Error: ${data}`);
+    });
+  });
+});
 
 app.get('/files', (req, res) => {
   const dataFolder = path.join(__dirname, 'public', 'data');
@@ -41,4 +62,4 @@ app.get('/samplerate/:file', async (req, res) => {
     }
 });
 
-app.listen(8000, () => console.log('Server is running on port 8000'));
+server.listen(8000, () => console.log('Server running on port 8000'));
