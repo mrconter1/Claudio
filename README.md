@@ -27,7 +27,7 @@ Claudio Studio was designed with the aim of simplifying the process of working w
 1. Clone the project repository.
 
    ```
-   git clone https://github.com/YourUsername/ClaudioStudio.git
+   git clone https://github.com/mrconter1/ClaudioStudio.git
    ```
 
 2. Navigate to the project directory
