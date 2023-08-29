@@ -88,6 +88,8 @@ model.add(Dense(1, activation='sigmoid'))
 print("Compiling the model...")
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
+# Training is disabled to prevent freezing when using only CPU (but works in Colab)
+
 # Defining the LSTM model
 #model.fit(np.expand_dims(X_train_padded, -1), y_train, epochs=3, batch_size=32, validation_data=(np.expand_dims(X_val_padded, -1), y_val), verbose=1)
 
